@@ -1,11 +1,8 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using CentralSystem.Hubs;
+﻿using CentralSystem.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
-namespace UTT
+namespace CentralSystem
 {
     public class Scavenger : BackgroundService
     {

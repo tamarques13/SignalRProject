@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using System.Xml.Linq;
 
 namespace CentralSystem.Hubs
 {
