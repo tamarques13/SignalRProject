@@ -16,7 +16,10 @@ namespace CentralSystem
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Server", $"Hi {User.GetUser()}! New Post was added!");
+                User.GetUsers().ToList().ForEach(u =>
+                {
+                    _hubContext.Clients.Client(u.ConnectionId).SendAsync("ReceiveMessage", "Server", $"Hi {u.Name}! New Post was added!");
+                });
 
                 await Task.Delay(3000);
             }

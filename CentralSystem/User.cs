@@ -8,13 +8,22 @@ namespace CentralSystem
 {
     public class User
     {
-        public static string Name;
+        public string ConnectionId { get; set; }
+        public string Name { get; set; }
 
-        public User(string name)
+        private static ConcurrentDictionary<string, User> _users = new();
+
+        public static void AddUser(string connectionId, string name)
         {
-            Name = name;
-        } 
+            if (string.IsNullOrEmpty(name))
+            {
+                return;
 
-        public static string GetUser() => Name;
+            }
+
+            _users.TryAdd(connectionId, new User { ConnectionId = connectionId, Name = name });
+        }
+
+        public static IEnumerable<User> GetUsers() => _users.Values;
     }
 }

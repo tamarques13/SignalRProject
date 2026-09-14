@@ -19,7 +19,6 @@ namespace Client
 
             try
             {
-                
                 Console.WriteLine("Type UserName:");
 
                 do
