@@ -6,7 +6,7 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            string userName = "";
+            string userName;
 
             var connection = new HubConnectionBuilder()
                 .WithUrl("http://localhost:5000/chatHub")

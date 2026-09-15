@@ -6,6 +6,7 @@ namespace CentralSystem
 {
     public class User
     {
+        // Doubt: Best Practices to handle non-nullable properties
         public string ConnectionId { get; set; }
         public string Name { get; set; }
         private static ConcurrentDictionary<string, User> Users = new();
