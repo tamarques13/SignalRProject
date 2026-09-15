@@ -8,7 +8,6 @@ namespace CentralSystem
     {
         public string ConnectionId { get; set; }
         public string Name { get; set; }
-
         private static ConcurrentDictionary<string, User> Users = new();
 
         public static void AddUser(string connectionId, string name)
