@@ -5,8 +5,6 @@ namespace CentralSystem.Hubs
 {
     public class ChatHub : Hub
     {
-        public static ConcurrentDictionary<string, User> Users = new();
-
         public async Task OnConnectedAsync(string username)
         {
             User.AddUser(Context.ConnectionId, username);

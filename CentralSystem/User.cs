@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CentralSystem
 {
@@ -11,7 +9,7 @@ namespace CentralSystem
         public string ConnectionId { get; set; }
         public string Name { get; set; }
 
-        private static ConcurrentDictionary<string, User> _users = new();
+        private static ConcurrentDictionary<string, User> Users = new();
 
         public static void AddUser(string connectionId, string name)
         {
@@ -21,9 +19,9 @@ namespace CentralSystem
 
             }
 
-            _users.TryAdd(connectionId, new User { ConnectionId = connectionId, Name = name });
+            Users.TryAdd(connectionId, new User { ConnectionId = connectionId, Name = name });
         }
 
-        public static IEnumerable<User> GetUsers() => _users.Values;
+        public static IEnumerable<User> GetUsers() => Users.Values;
     }
 }

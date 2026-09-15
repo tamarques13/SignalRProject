@@ -1,12 +1,15 @@
 ﻿using CentralSystem.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
+using System.Collections.Concurrent;
+using System.Xml.Linq;
 
 namespace CentralSystem
 {
     public class Scavenger : BackgroundService
     {
         private readonly IHubContext<ChatHub> _hubContext;
+
         public Scavenger(IHubContext<ChatHub> hubContext)
         {
             _hubContext = hubContext;
