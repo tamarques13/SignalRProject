@@ -13,13 +13,12 @@ namespace CentralSystem
 
         public static void AddUser(string connectionId, string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                return;
-
-            }
-
             Users.TryAdd(connectionId, new User { ConnectionId = connectionId, Name = name });
+        }
+
+        public static void RemoveUser(string connectId)
+        {
+            Users.TryRemove(connectId, out _);
         }
 
         public static IEnumerable<User> GetUsers() => Users.Values;

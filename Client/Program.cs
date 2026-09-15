@@ -17,24 +17,18 @@ namespace Client
                 Console.WriteLine(userName + ':' + message);
             });
 
-            try
+            Console.WriteLine("Type UserName:");
+
+            do
             {
-                Console.WriteLine("Type UserName:");
-
-                do
-                {
-                    userName = Console.ReadLine() ?? "";
-                }
-                while (userName.Length == 0);
-
-                connection.StartAsync();
-                connection.InvokeAsync("OnConnectedAsync", userName);
-                Console.WriteLine("SignalR Connected");
+                userName = Console.ReadLine() ?? "";
             }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception);
-            };
+            while (userName.Length == 0);
+
+            connection.StartAsync();
+            connection.InvokeAsync("OnConnectedAsync", userName);
+            Console.WriteLine("SignalR Connected");
+
 
             //while (true)
             //{
@@ -43,6 +37,9 @@ namespace Client
             //    connection.InvokeCoreAsync("SendToEveryone", args: [userName, message]);
 
             //}
+
+            Console.ReadKey();
+            connection.InvokeAsync("OnDisconnectedAsync", userName);
 
             Console.ReadKey();
         }
