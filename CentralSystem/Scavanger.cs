@@ -1,7 +1,6 @@
 ﻿using CentralSystem.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 
 namespace CentralSystem
@@ -28,19 +27,15 @@ namespace CentralSystem
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var g in Group.GetGroups())
+                foreach (var group in Group.GetGroups())
                 {
-                    string groupMessage = $"[{g}] New Post was added!" ;
-                    await _hubContext.Clients.Group(g).SendAsync("ReceiveMessage", "Server", groupMessage);
+                    string groupMessage = "Hi <name>! Check the new post added!";
+                    await _hubContext.Clients.Group(group).SendAsync("ReceiveMessage", group, groupMessage);
 
-                    foreach (var u in User.GetUsers().Where(u => u.Group == g))
+                    foreach (var u in User.GetUsers().Where(u => u.Group == group))
                     {
-                         string message = $"Hi {u.Name}! Check the new post added to {g}!";
-
-                        await _hubContext.Clients.Client(u.ConnectionId).SendAsync("ReceiveMessage", "Server", message);
-                         LoggedMessages.TryAdd(Guid.NewGuid(), new Message { Name = u.Name, Description = message });
-
-                     };
+                        LoggedMessages.TryAdd(Guid.NewGuid(), new Message { Name = u.Name, Description = groupMessage.Replace("<name>", u.Name)});
+                    };
                  };
 
                 await Task.Delay(3000);
@@ -53,9 +48,7 @@ namespace CentralSystem
             {
                 User.GetUsers().ToList().ForEach(u =>
                 {
-                    string message = $"Hi {u.Name}! Check the new post added to {u.Group}!";
-
-                    Console.WriteLine($"Number os Messages for {u.Name}:  {LoggedMessages.Count(lm => lm.Value.Name == u.Name && lm.Value.Description == message)}");
+                    Console.WriteLine($"Number os Messages for {u.Name}: {LoggedMessages.Count(lm => lm.Value.Name == u.Name)}");
                 });
 
                 await Task.Delay(10000);

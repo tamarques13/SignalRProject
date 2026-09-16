@@ -6,42 +6,51 @@ namespace Client
     {
         static void Main(string[] args)
         {
+            string input;
+            string groupInput;
+            List<string> users = new();
+
+            Console.WriteLine("Type Group Name:");
+            groupInput = Console.ReadLine() ?? "";
+
+            do
+            {
+                Console.WriteLine("Type Client Name:");
+                input = Console.ReadLine() ?? "";
+
+                if (input != "x")
+                    users.Add(input);
+
+            } while (input.ToLower() != "x");
+
+            users.ForEach(user =>
+            {
+                _ = ConnectClientToCentral(user, groupInput);
+            });
+
+            Console.ReadKey();
+        }
+
+        private static async Task ConnectClientToCentral(string user, string groupName)
+        {
             var connection = new HubConnectionBuilder()
                 .WithUrl("http://localhost:5000/chatHub")
                 .Build();
 
             connection.On("ReceiveMessage", (string userName, string message) =>
             {
-                Console.WriteLine(userName + ':' + message);
+                Console.WriteLine(userName + ':' + message.Replace("<name>", user));
             });
 
-            Console.WriteLine("Type UserName:");
-
-            string userName = Console.ReadLine() ?? "";
-
-            Console.WriteLine("Type GroupName:");
-
-            string groupName = Console.ReadLine() ?? "";
-
-            connection.StartAsync();
-            connection.InvokeAsync("OnConnectedAsync", userName, groupName);
+            await connection.StartAsync();
+            await connection.InvokeAsync("OnConnectedAsync", user, groupName);
             Console.WriteLine("SignalR Connected");
 
-            connection.InvokeAsync("JoinGroup", groupName, userName);
+            await connection.InvokeAsync("JoinGroup", groupName, user);
 
-
-            //while (true)
-            //{
-            //    string message = Console.ReadLine();
-
-            //    connection.InvokeCoreAsync("SendToEveryone", args: [userName, message]);
-
-            //}
-
-            Console.ReadKey();
-            connection.InvokeAsync("OnDisconnectedAsync", userName);
-
-            Console.ReadKey();
+            //Console.ReadKey();
+            //await connection.InvokeAsync("OnDisconnectedAsync", userName);
         }
+
     }
 }
