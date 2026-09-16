@@ -6,8 +6,6 @@ namespace Client
     {
         static void Main(string[] args)
         {
-            string userName;
-
             var connection = new HubConnectionBuilder()
                 .WithUrl("http://localhost:5000/chatHub")
                 .Build();
@@ -19,15 +17,17 @@ namespace Client
 
             Console.WriteLine("Type UserName:");
 
-            do
-            {
-                userName = Console.ReadLine() ?? "";
-            }
-            while (userName.Length == 0);
+            string userName = Console.ReadLine() ?? "";
+
+            Console.WriteLine("Type GroupName:");
+
+            string groupName = Console.ReadLine() ?? "";
 
             connection.StartAsync();
-            connection.InvokeAsync("OnConnectedAsync", userName);
+            connection.InvokeAsync("OnConnectedAsync", userName, groupName);
             Console.WriteLine("SignalR Connected");
+
+            connection.InvokeAsync("JoinGroup", groupName, userName);
 
 
             //while (true)

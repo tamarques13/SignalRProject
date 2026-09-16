@@ -9,11 +9,12 @@ namespace CentralSystem
         // Doubt: Best Practices to handle non-nullable properties
         public string ConnectionId { get; set; }
         public string Name { get; set; }
+        public string Group {  get; set; }
         private static ConcurrentDictionary<string, User> Users = new();
 
-        public static void AddUser(string connectionId, string name)
+        public static void AddUser(string connectionId, string name, string groupName)
         {
-            Users.TryAdd(connectionId, new User { ConnectionId = connectionId, Name = name });
+            Users.TryAdd(connectionId, new User { ConnectionId = connectionId, Name = name, Group = groupName });
         }
 
         public static void RemoveUser(string connectId)
