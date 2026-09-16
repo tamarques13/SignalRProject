@@ -23,6 +23,10 @@ namespace Client
 
             } while (input.ToLower() != "x");
 
+            Console.WriteLine();
+            Console.WriteLine("Starting...");
+            Console.WriteLine();
+
             users.ForEach(user =>
             {
                 _ = ConnectClientToCentral(user, groupInput);
@@ -44,7 +48,6 @@ namespace Client
 
             await connection.StartAsync();
             await connection.InvokeAsync("OnConnectedAsync", user, groupName);
-            Console.WriteLine("SignalR Connected");
 
             await connection.InvokeAsync("JoinGroup", groupName, user);
 
