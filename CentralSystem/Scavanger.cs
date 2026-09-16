@@ -48,7 +48,7 @@ namespace CentralSystem
             {
                 User.GetUsers().ToList().ForEach(u =>
                 {
-                    Console.WriteLine($"Number os Messages for {u.Name}: {LoggedMessages.Count(lm => lm.Value.Name == u.Name)}");
+                    Console.WriteLine($"[{u.Group}] Number os Messages for {u.Name}: {LoggedMessages.Count(lm => lm.Value.Name == u.Name)}");
                 });
 
                 await Task.Delay(10000);
