@@ -46,10 +46,10 @@ namespace CentralSystem
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                User.GetUsers().ToList().ForEach(u =>
-                {
-                    Console.WriteLine($"[{u.Group}] Number os Messages for {u.Name}: {LoggedMessages.Count(lm => lm.Value.Name == u.Name)}");
-                });
+                foreach(User user in User.GetUsers())
+                { 
+                    Console.WriteLine($"[{user.Group}] Number os Messages for {user.Name}: {LoggedMessages.Count(lm => lm.Value.Name == user.Name)}");
+                };
 
                 await Task.Delay(10000);
             }
