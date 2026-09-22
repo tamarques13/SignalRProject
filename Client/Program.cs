@@ -7,6 +7,7 @@ namespace Client
         private static List<HubConnection> connections = new();
         private static List<string> users = new();
         private static string groupInput;
+        private static string clientInput;
 
         static async Task Main(string[] args)
         {
@@ -17,12 +18,12 @@ namespace Client
             if (!CheckStringNotNull(groupInput))
                 return;
 
-            CollectClients();
+            clientInput = CollectClient();
 
-            if (!CheckListHasValues(users)) 
+            if (!CheckStringNotNull(clientInput))
                 return;
 
-            await ConnectClientToCentral(groupInput);
+            await ConnectClientToCentral(clientInput, groupInput);
 
             Console.ReadKey();
             Console.Clear();
@@ -41,36 +42,11 @@ namespace Client
             return Console.ReadLine() ?? "";
         }
 
-        private static void CollectClients()
+        private static string CollectClient()
         {
-            string input;
-
-            do
-            {
-                Console.Clear();
-                Console.WriteLine("Type 'x' to Contine...");
-                Console.WriteLine();
-
-                Console.WriteLine($"Clients added: {users.Count}");
-                Console.WriteLine("Type Client Name:");
-
-                input = Console.ReadLine() ?? "Unknown";
-
-                if (!input.Equals("x")) 
-                    users.Add(input);
-
-            } while (!input.Equals("x"));
-        }
-
-        private static bool CheckListHasValues(List<string> values)
-        {
-            if (values.Count < 1)
-            {
-                InvalidValuePrint();
-                return false;
-            }
-
-            return true;
+            Console.WriteLine();
+            Console.WriteLine("Type Client Name:");
+            return Console.ReadLine() ?? "";
         }
 
         private static bool CheckStringNotNull(string value)
@@ -84,28 +60,25 @@ namespace Client
             return true;
         }
 
-        private static async Task ConnectClientToCentral(string groupName)
+        private static async Task ConnectClientToCentral(string clientInput, string groupName)
         {
             Console.Clear();
 
-            foreach (var user in users)
+            var connection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5000/chatHub")
+            .Build();
+
+            connection.On("ReceiveMessage", (string userName, string message) =>
             {
-                var connection = new HubConnectionBuilder()
-                .WithUrl("http://localhost:5000/chatHub")
-                .Build();
+                Console.WriteLine(userName + ':' + message.Replace("<name>", clientInput));
+            });
 
-                connection.On("ReceiveMessage", (string userName, string message) =>
-                {
-                    Console.WriteLine(userName + ':' + message.Replace("<name>", user));
-                });
+            connections.Add(connection);
 
-                connections.Add(connection);
+            await connection.StartAsync();
+            await connection.InvokeAsync("OnConnectedAsync", clientInput, groupName);
 
-                await connection.StartAsync();
-                await connection.InvokeAsync("OnConnectedAsync", user, groupName);
-
-                await connection.InvokeAsync("JoinGroup", groupName, user);
-            };
+            await connection.InvokeAsync("JoinGroup", groupName, clientInput);
         }
 
         private static async Task DisconnectClientsFromCentral(string groupName)
