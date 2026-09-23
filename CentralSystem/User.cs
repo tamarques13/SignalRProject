@@ -20,6 +20,11 @@ namespace CentralSystem
             Users.TryRemove(connectId, out _);
         }
 
+        public static bool IsItEmpty()
+        {
+            return Users.Values.Any();
+        }
+
         public static IEnumerable<User> GetUsers() => Users.Values;
     }
 }

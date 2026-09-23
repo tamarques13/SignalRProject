@@ -18,7 +18,7 @@ namespace CentralSystem
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var task1 = SendNotificationsToClients(1000, stoppingToken);
+            var task1 = SendNotificationsToClients(250, stoppingToken);
             var task2 = CheckLoggedMessages(stoppingToken);
 
             Task.WaitAll(task1, task2);
@@ -34,15 +34,21 @@ namespace CentralSystem
             {
                 foreach (var group in Group.GetGroups())
                 {
+                    if (!User.IsItEmpty())
+                        return;
+
                     i++;
 
-                    string groupMessage = $"Transaction #{i} of {region.CurrencySymbol}{random.Next(0, 1000)}.{random.Next(10, 99)} has been sent to your account.";
+                    string groupMessage = $"Hi <name>! Transaction #{i} of {region.CurrencySymbol}{random.Next(0, 1000)}.{random.Next(10, 99)} has been sent to your account.";
                     await _hubContext.Clients.Group(group).SendAsync("ReceiveMessage", group, groupMessage);
+
+                    //Console.WriteLine("Message Sent!");
 
                     foreach (var u in User.GetUsers().Where(u => u.Group == group))
                     {
                         LoggedMessages.TryAdd(Guid.NewGuid(), new Message { Name = u.Name, Description = groupMessage.Replace("<name>", u.Name)});
                     };
+
                 };
 
                 await Task.Delay(ms);

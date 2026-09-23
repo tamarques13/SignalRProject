@@ -5,48 +5,52 @@ namespace Client
     internal class Program
     {
         private static List<HubConnection> connections = new();
+        private static List<string> queue = new();
         private static List<string> users = new();
         private static string groupInput;
         private static string clientInput;
+        static CancellationTokenSource source = new CancellationTokenSource();
+        static CancellationToken token = source.Token;
 
         static async Task Main(string[] args)
         {
-            Console.WriteLine("SignalR Training Project");
+            Console.WriteLine("SignalR w/ Queue Training Project");
 
-            groupInput = CollectGroup();
+            groupInput = CollectString("Group");
 
             if (!CheckStringNotNull(groupInput))
                 return;
 
-            clientInput = CollectClient();
+            clientInput = CollectString("Client");
 
             if (!CheckStringNotNull(clientInput))
                 return;
 
             await ConnectClientToCentral(clientInput, groupInput);
 
+            var task = ProcessMessageQueue(1000, token);
+
+            // Can I wait for ChatHub response so i can send this
+            Console.WriteLine("Press any key to stop...");
             Console.ReadKey();
+
+            source.Cancel();
+            task.Wait();
+
             Console.Clear();
 
             await DisconnectClientsFromCentral(groupInput);
 
-            Console.WriteLine();
             Console.WriteLine("Press 'Any Key' to exit");
             Console.ReadKey();
         }
 
-        private static string CollectGroup()
+        private static string CollectString(string type)
         {
             Console.WriteLine();
-            Console.WriteLine("Type Group Name:");
-            return Console.ReadLine() ?? "";
-        }
+            Console.WriteLine($"Type {type} Name:");
 
-        private static string CollectClient()
-        {
-            Console.WriteLine();
-            Console.WriteLine("Type Client Name:");
-            return Console.ReadLine() ?? "";
+ return Console.ReadLine() ?? "";
         }
 
         private static bool CheckStringNotNull(string value)
@@ -70,7 +74,9 @@ namespace Client
 
             connection.On("ReceiveMessage", (string userName, string message) =>
             {
-                Console.WriteLine(userName + ':' + message.Replace("<name>", clientInput));
+                var updatedMessage = $"[{userName}]" + ": " + message.Replace("<name>", clientInput);
+
+                queue.Add(updatedMessage);
             });
 
             connections.Add(connection);
@@ -99,6 +105,19 @@ namespace Client
             Console.WriteLine();
             Console.WriteLine("Press 'Any Key' to exit");
             Console.ReadKey();
+        }
+
+        private static async Task ProcessMessageQueue(int ms, CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                var message = queue.First();
+                queue.Remove(message);
+
+                Console.WriteLine(message);
+
+                await Task.Delay(ms);
+            }
         }
     }
 }
