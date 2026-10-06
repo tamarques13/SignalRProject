@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using System.Collections.Concurrent;
 
 namespace Client
 {
     internal class Program
     {
         private static List<HubConnection> connections = new();
-        private static List<string> queue = new();
-        private static List<string> users = new();
-        private static string groupInput;
-        private static string clientInput;
+        private static ConcurrentQueue<string> queue = new();
+        private static string? groupInput;
+        private static string? clientInput;
         static CancellationTokenSource source = new CancellationTokenSource();
         static CancellationToken token = source.Token;
 
@@ -50,7 +50,7 @@ namespace Client
             Console.WriteLine();
             Console.WriteLine($"Type {type} Name:");
 
- return Console.ReadLine() ?? "";
+            return Console.ReadLine() ?? "";
         }
 
         private static bool CheckStringNotNull(string value)
@@ -76,7 +76,7 @@ namespace Client
             {
                 var updatedMessage = $"[{userName}]" + ": " + message.Replace("<name>", clientInput);
 
-                queue.Add(updatedMessage);
+                queue.Enqueue(updatedMessage);
             });
 
             connections.Add(connection);
@@ -93,7 +93,8 @@ namespace Client
             {
                 await connection.InvokeAsync("LeaveGroup", groupName);
                 await connection.InvokeAsync("OnDisconnectedAsync");
-            };
+            }
+            ;
 
             connections.Clear();
         }
@@ -111,8 +112,7 @@ namespace Client
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var message = queue.First();
-                queue.Remove(message);
+                queue.TryDequeue(out string? message);
 
                 Console.WriteLine(message);
 
