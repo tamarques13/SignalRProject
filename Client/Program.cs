@@ -7,8 +7,6 @@ namespace Client
     {
         private static List<HubConnection> connections = new();
         private static ConcurrentQueue<string> queue = new();
-        private static string? groupInput;
-        private static string? clientInput;
         static CancellationTokenSource source = new CancellationTokenSource();
         static CancellationToken token = source.Token;
 
@@ -16,52 +14,15 @@ namespace Client
         {
             Console.WriteLine("SignalR w/ Queue Training Project");
 
-            groupInput = CollectString("Group");
-
-            if (!CheckStringNotNull(groupInput))
-                return;
-
-            clientInput = CollectString("Client");
-
-            if (!CheckStringNotNull(clientInput))
-                return;
+            string groupInput = CollectString("Group");
+            string clientInput = CollectString("Client");
 
             await ConnectClientToCentral(clientInput, groupInput);
-
             var task = ProcessMessageQueue(1000, token);
 
-            // Can I wait for ChatHub response so i can send this
-            Console.WriteLine("Press any key to stop...");
-            Console.ReadKey();
-
-            source.Cancel();
-            task.Wait();
-
-            Console.Clear();
-
+            CancelProcessMessageQueue(task);
+            
             await DisconnectClientsFromCentral(groupInput);
-
-            Console.WriteLine("Press 'Any Key' to exit");
-            Console.ReadKey();
-        }
-
-        private static string CollectString(string type)
-        {
-            Console.WriteLine();
-            Console.WriteLine($"Type {type} Name:");
-
-            return Console.ReadLine() ?? "";
-        }
-
-        private static bool CheckStringNotNull(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-            {
-                InvalidValuePrint();
-                return false;
-            }
-
-            return true;
         }
 
         private static async Task ConnectClientToCentral(string clientInput, string groupName)
@@ -93,17 +54,9 @@ namespace Client
             {
                 await connection.InvokeAsync("LeaveGroup", groupName);
                 await connection.InvokeAsync("OnDisconnectedAsync");
-            }
-            ;
+            };
 
             connections.Clear();
-        }
-
-        private static void InvalidValuePrint()
-        {
-            Console.Clear();
-            Console.WriteLine("Warning: Must provide one value!");
-            Console.WriteLine();
             Console.WriteLine("Press 'Any Key' to exit");
             Console.ReadKey();
         }
@@ -118,6 +71,43 @@ namespace Client
 
                 await Task.Delay(ms);
             }
+        }
+
+        private static void CancelProcessMessageQueue(Task task)
+        {
+            Console.ReadKey();
+            source.Cancel();
+            task.Wait();
+            Console.Clear();
+        }
+
+        private static string CollectString(string type)
+        {
+
+            Console.WriteLine();
+            Console.WriteLine($"Type {type} Name:");
+
+            string result = Console.ReadLine() ?? "";
+
+            if (!CheckStringNotNull(result))
+                throw new ArgumentNullException("Value is Null");
+
+            return result;
+        }
+
+        private static bool CheckStringNotNull(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                Console.Clear();
+                Console.WriteLine("Warning: Must provide one value!");
+                Console.WriteLine();
+                Console.WriteLine("Press 'Any Key' to exit");
+                Console.ReadKey();
+                return false;
+            }
+
+            return true;
         }
     }
 }
