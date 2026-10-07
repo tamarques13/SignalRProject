@@ -18,7 +18,7 @@ namespace CentralSystem
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var task1 = SendNotificationsToClients(250, stoppingToken);
+            var task1 = SendNotificationsToClients(1000, stoppingToken);
             var task2 = CheckLoggedMessages(stoppingToken);
 
             Task.WaitAll(task1, task2);
@@ -32,22 +32,19 @@ namespace CentralSystem
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach (var group in Group.GetGroups())
+                var users = User.GetUsers().ToList();
+
+                foreach (var user in users)
                 {
                     if (!User.IsItEmpty())
                         return;
 
                     i++;
 
-                    string groupMessage = $"Hi <name>! Transaction #{i} of {region.CurrencySymbol}{random.Next(0, 1000)}.{random.Next(10, 99)} has been sent to your account.";
-                    await _hubContext.Clients.Group(group).SendAsync("ReceiveMessage", group, groupMessage);
+                    string Message = $"Hi {user.Name}! Transaction #{i} of {region.CurrencySymbol}{random.Next(0, 1000)}.{random.Next(10, 99)} has been sent to your account.";
+                    await _hubContext.Clients.Client(user.ConnectionId).SendAsync("ReceiveMessage", user.Group, Message);
 
-                    //Console.WriteLine("Message Sent!");
-
-                    foreach (var u in User.GetUsers().Where(u => u.Group == group))
-                    {
-                        LoggedMessages.TryAdd(Guid.NewGuid(), new Message { Name = u.Name, Description = groupMessage.Replace("<name>", u.Name)});
-                    };
+                    LoggedMessages.TryAdd(Guid.NewGuid(), new Message { Name = user.Name, Description = Message });
 
                 };
 
@@ -59,8 +56,8 @@ namespace CentralSystem
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                foreach(User user in User.GetUsers())
-                { 
+                foreach (User user in User.GetUsers())
+                {
                     Console.WriteLine($"[{user.Group}] Number os Messages for {user.Name}: {LoggedMessages.Count(lm => lm.Value.Name == user.Name)}");
                 };
 
