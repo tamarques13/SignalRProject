@@ -10,7 +10,8 @@ namespace CentralSystem.Hubs
 
             User.AddUser(Context.ConnectionId, username, groupName);
 
-            await Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
+            // Disable Message to Client
+            //await Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
 
             Console.WriteLine(message);
         }
@@ -36,13 +37,10 @@ namespace CentralSystem.Hubs
 
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
-             await Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
+            // Disable Message to Client
+            //await Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
 
             Group.AddGroup(groupName);
-
-            // Doubt:
-            // Is it better to do a find in User.GetUsers() with ConnectionId
-            // Or receive directly through params
 
             Console.WriteLine(message);
         }

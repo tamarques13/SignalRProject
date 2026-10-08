@@ -18,7 +18,7 @@ namespace CentralSystem
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var task1 = SendNotificationsToClients(1000, stoppingToken);
+            var task1 = SendNotificationsToClients(200, stoppingToken);
             var task2 = CheckLoggedMessages(stoppingToken);
 
             Task.WaitAll(task1, task2);
