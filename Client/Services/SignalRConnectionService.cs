@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Client.Services.Interfaces;
 
-using static Client.MessageQueue;
-
-namespace Client
+namespace Client.Services
 {
-    internal class SignalRConnections
+    internal class SignalRConnectionService(IMessageQueueService messageQueue) : ISignalRConnectionService
     {
-        public static List<HubConnection> connections = new();
+        private readonly IMessageQueueService _messageQueueService = messageQueue;
+        private static List<HubConnection> connections = new();
 
-        public static async Task ConnectClientToCentral(string clientInput, string groupName)
+        public async Task ConnectClientToCentral(string clientInput, string groupName)
         {
             Console.Clear();
 
@@ -20,7 +20,7 @@ namespace Client
             {
                 var updatedMessage = $"[{userName}]" + ": " + message.Replace("<name>", clientInput);
 
-                queue.Enqueue(updatedMessage);
+                _messageQueueService.GetQueue().Enqueue(updatedMessage);
             });
 
             connections.Add(connection);
@@ -31,13 +31,14 @@ namespace Client
             await connection.InvokeAsync("JoinGroup", groupName, clientInput);
         }
 
-        public static async Task DisconnectClientsFromCentral(string groupName)
+        public async Task DisconnectClientsFromCentral(string groupName)
         {
             foreach (var connection in connections)
             {
                 await connection.InvokeAsync("LeaveGroup", groupName);
                 await connection.InvokeAsync("OnDisconnectedAsync");
-            };
+            }
+            ;
 
             connections.Clear();
             Console.WriteLine("Press 'Any Key' to exit");

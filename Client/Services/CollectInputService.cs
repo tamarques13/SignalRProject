@@ -1,10 +1,12 @@
-﻿namespace Client
-{
-    internal class CollectInput
-    {
-        public static string? groupInput;
+﻿using Client.Services.Interfaces;
 
-        public static string CollectString(string type)
+namespace Client.Services
+{
+    internal class CollectInputService : ICollectInputService
+    {
+        private static string? groupInput;
+
+        public string CollectString(string type)
         {
 
             Console.Clear();
@@ -18,6 +20,16 @@
             }
 
             return result;
+        }
+
+        public void SetGroupInput(string value)
+        {
+            groupInput = value;
+        }
+
+        public string GetGroupInput()
+        {
+            return groupInput ?? throw new NullReferenceException();
         }
 
         private static bool CheckStringNotNull(string value)
@@ -34,6 +46,5 @@
 
             return true;
         }
-
     }
 }

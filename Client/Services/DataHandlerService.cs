@@ -1,12 +1,13 @@
-﻿using static Client.MessageQueue;
+﻿using Client.Services.Interfaces;
 
-namespace Client
+namespace Client.Services
 {
-    internal class DataHandler
+    internal class DataHandlerService(IMessageQueueService messageQueue) : IDataHandlerService
     {
-        public const string path = @"C:\Dev\TrainToDev\SignalRProject\data.txt";
+        private readonly IMessageQueueService _messageQueue = messageQueue;
+        private const string path = @"C:\Dev\TrainToDev\SignalRProject\data.txt";
 
-        public static void handleDataOnStartUp()
+        public void HandleDataOnStartUp()
         {
             Console.WriteLine("");
             Console.WriteLine("How would like to Proceed?");
@@ -35,16 +36,20 @@ namespace Client
 
                     break;
             }
-
         }
 
-        private static void LoadDataFileIntoQueue()
+        public string GetDataPath()
+        {
+            return path;
+        }
+
+        private void LoadDataFileIntoQueue()
         {
             var content = File.ReadAllLines(path);
 
             foreach (string line in content)
             {
-                queue.Enqueue(line);
+                _messageQueue.GetQueue().Enqueue(line);
             }
         }
 

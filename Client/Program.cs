@@ -1,12 +1,7 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using System.Collections.Concurrent;
-using System.Runtime.InteropServices;
-
-using static Client.ShutDownHandler;
-using static Client.MessageQueue;
-using static Client.SignalRConnections;
-using static Client.CollectInput;
-using static Client.DataHandler;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Client.Services.Interfaces;
+using Client.Services;
 
 namespace Client
 {
@@ -14,20 +9,22 @@ namespace Client
     {
         static async Task Main(string[] args)
         {
-            SetConsoleCtrlHandler(Handler, true);
+            var builder = Host.CreateApplicationBuilder(args);
 
-            Console.WriteLine("SignalR w/ Queue Training Project");
-            handleDataOnStartUp();
+            builder.Services.AddSingleton<Application>();
 
-            groupInput = CollectString("Group");
-            string clientInput = CollectString("Client");
+            builder.Services.AddTransient<IDataHandlerService, DataHandlerService>();
+            builder.Services.AddTransient<ICollectInputService, CollectInputService>();
 
-            await ConnectClientToCentral(clientInput, groupInput);
-            var task = ProcessMessageQueue(1000, token);
+            builder.Services.AddScoped<IMessageQueueService, MessageQueueService>();
+            builder.Services.AddScoped<IShutDownHandlerService, ShutDownHandlerService>();
+            builder.Services.AddScoped<ISignalRConnectionService, SignalRConnectionService>();
 
-            CancelProcessMessageQueue(task);
+            using var host = builder.Build();
+            
+            var app = host.Services.GetRequiredService<Application>();
 
-            await DisconnectClientsFromCentral(groupInput);
+            await app.ConsoleApp();
         }
     }
 }
