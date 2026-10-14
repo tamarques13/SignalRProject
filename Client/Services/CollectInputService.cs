@@ -34,7 +34,7 @@ namespace Client.Services
 
         public string GetGroupInput()
         {
-            return groupInput ?? throw new NullReferenceException();
+            return groupInput ?? "";
         }
 
         private static bool CheckStringNotNull(string value)
