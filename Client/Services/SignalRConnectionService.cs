@@ -42,7 +42,9 @@ namespace Client.Services
 
         public async Task DisconnectClientsFromCentral(string groupName)
         {
-            foreach (var connection in connections)
+            var toRemove = new List<HubConnection>();
+
+            foreach (var connection in connections.ToList())
             {
                 try
                 {
@@ -59,10 +61,7 @@ namespace Client.Services
                     await connection.DisposeAsync();
                     connections.Remove(connection);
                 }
-            };
-
-            Console.WriteLine("Press 'Any Key' to exit");
-            Console.ReadKey();
+            }
         }
     }
 }

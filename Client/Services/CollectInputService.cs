@@ -14,24 +14,17 @@ namespace Client.Services
             Console.Clear();
             string result;
 
-            try
+
+            Console.WriteLine($"Type {type} Name:");
+
+            result = Console.ReadLine() ?? "";
+
+            if (!CheckStringNotNull(result))
             {
-                Console.WriteLine($"Type {type} Name:");
-
-                result = Console.ReadLine() ?? "";
-
-                if (!CheckStringNotNull(result))
-                {
-                    Environment.Exit(0);
-                }
-
-                return result;
+                Environment.Exit(0);
             }
-            catch (IOException ex)
-            {
-                _logger.LogError(ex, "Unable to collect user input");
-                throw;
-            }
+
+            return result;
         }
 
         public void SetGroupInput(string value)

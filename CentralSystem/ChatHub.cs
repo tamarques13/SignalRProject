@@ -1,53 +1,75 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 
 namespace CentralSystem.Hubs
 {
-    public class ChatHub : Hub
+    public class ChatHub(ILogger<ChatHub> logger) : Hub
     {
+        private readonly ILogger<ChatHub> _logger = logger;
+
         public async Task OnConnectedAsync(string username, string groupName)
         {
+            try
+            {
             string message = $"User {username} has connected.";
 
             User.AddUser(Context.ConnectionId, username, groupName);
 
-            // Disable Message to Client
-            //await Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
-
             Console.WriteLine(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to add user");
+            }
         }
 
         public async Task OnDisconnectedAsync()
         {
-            string user = User.GetUsers()
-                              .ToList()
-                              .Find(user => user.ConnectionId == Context.ConnectionId)?
-                              .Name ?? throw new InvalidOperationException("User not found.");
+            try
+            {
+                string user = User.GetUsers()
+                                   .ToList()
+                                   .Find(user => user.ConnectionId == Context.ConnectionId)?
+                                   .Name ?? throw new InvalidOperationException("User not found.");
 
-            string message = $"User {user} has disconnected.";
-
-            Console.WriteLine(message);
-            User.RemoveUser(Context.ConnectionId);
-
-            await Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
+                string message = $"User {user} has disconnected.";
+                User.RemoveUser(Context.ConnectionId);
+                Console.WriteLine(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Something happened while disconnecting user");
+            }
         }
 
         public async Task JoinGroup(string groupName, string name)
         {
-            string message = $"{name} has joined the group {groupName}.";
+            try
+            {
+                string message = $"{name} has joined the group {groupName}.";
 
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
-            // Disable Message to Client
-            //await Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
+                Group.AddGroup(groupName);
 
-            Group.AddGroup(groupName);
-
-            Console.WriteLine(message);
+                Console.WriteLine(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to Add user to group");
+            }
         }
 
         public async Task LeaveGroup(string groupName)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            try
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to Remove user from group");
+            }
         }
     }
 }

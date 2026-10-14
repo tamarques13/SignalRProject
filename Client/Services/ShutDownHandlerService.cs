@@ -39,33 +39,65 @@ namespace Client.Services
                     try
                     {
                         SaveDataToFile();
-                        return false;
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error during application shutdown.");
-                        return false;
                     }
 
+                    return true;
                 default:
-                    return false;
+                    return true;
             }
         }
 
         private void SaveDataToFile()
         {
+            try
+            {
+                _signalRConnections
+                    .DisconnectClientsFromCentral(_collectInput.GetGroupInput())
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to disconnect SignalR clients.");
+            }
+
             Console.WriteLine("Saving Data to File (data.txt)");
 
-            // Bug at line 45/46  
-            _signalRConnections
-                .DisconnectClientsFromCentral(_collectInput.GetGroupInput())
-                .GetAwaiter()
-                .GetResult();
+            try
+            {
+                string path = _dataHandler.GetDataPath();
 
-            var content = _messageQueue.GetQueue().ToArray();
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    _logger.LogWarning("Data file path is invalid.");
+                    return;
+                }
 
-            File.WriteAllLines(_dataHandler.GetDataPath(), content);
-            //Environment.Exit(0);
+                var content = _messageQueue.GetQueue().ToArray();
+                int index = 1;
+
+                List<string> lines = [];
+
+                foreach (var item in content)
+                {
+                    lines.Add($"{index}. {item}");
+                    index++;
+                }
+
+                File.WriteAllLines(path, lines);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, $"Problem occured while saving queue");
+            }
+            finally
+            {
+                Environment.Exit(0);
+            }
         }
     }
 }

@@ -4,7 +4,6 @@ namespace CentralSystem
 {
     public class User
     {
-        // Doubt: Best Practices to handle non-nullable properties
         public required string ConnectionId { get; set; }
         public required string Name { get; set; }
         public required string Group {  get; set; }

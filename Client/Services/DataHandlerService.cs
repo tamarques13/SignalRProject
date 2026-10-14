@@ -49,9 +49,13 @@ namespace Client.Services
         {
             try
             {
-                var content = File.ReadAllLines(path);
+                var contentSorted = File.ReadAllLines(path)
+                    .OrderBy(line => int.Parse(line.Split('.')[0]))
+                    .ToList();
 
-                foreach (string line in content)
+                var contentProcessed = contentSorted.Select(line => line.Split('.', 2)[1].TrimStart()).ToList();
+
+                foreach (string line in contentProcessed)
                 {
                     _messageQueue.GetQueue().Enqueue(line);
                 }
