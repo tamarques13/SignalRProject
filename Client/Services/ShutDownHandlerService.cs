@@ -43,7 +43,7 @@ namespace Client.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error during application shutdown.")
+                        _logger.LogError(ex, "Error during application shutdown.");
                         return false;
                     }
 
