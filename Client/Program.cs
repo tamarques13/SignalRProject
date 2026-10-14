@@ -11,6 +11,8 @@ namespace Client
         {
             var builder = Host.CreateApplicationBuilder(args);
 
+            builder.Services.AddLogging();
+
             builder.Services.AddSingleton<Application>();
 
             builder.Services.AddTransient<IDataHandlerService, DataHandlerService>();

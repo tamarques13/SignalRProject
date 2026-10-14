@@ -1,25 +1,37 @@
 ﻿using Client.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Client.Services
 {
-    internal class CollectInputService : ICollectInputService
+    internal class CollectInputService(ILogger<CollectInputService> logger) : ICollectInputService
     {
+        private readonly ILogger<CollectInputService> _logger = logger;
         private static string? groupInput;
 
         public string CollectString(string type)
         {
 
             Console.Clear();
-            Console.WriteLine($"Type {type} Name:");
+            string result;
 
-            string result = Console.ReadLine() ?? "";
-
-            if (!CheckStringNotNull(result))
+            try
             {
-                Environment.Exit(0);
-            }
+                Console.WriteLine($"Type {type} Name:");
 
-            return result;
+                result = Console.ReadLine() ?? "";
+
+                if (!CheckStringNotNull(result))
+                {
+                    Environment.Exit(0);
+                }
+
+                return result;
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, "Unable to collect user input");
+                throw;
+            }
         }
 
         public void SetGroupInput(string value)

@@ -1,10 +1,12 @@
 ﻿using Client.Services.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace Client.Services
 {
-    internal class DataHandlerService(IMessageQueueService messageQueue) : IDataHandlerService
+    internal class DataHandlerService(IMessageQueueService messageQueue, ILogger<DataHandlerService> logger ) : IDataHandlerService
     {
         private readonly IMessageQueueService _messageQueue = messageQueue;
+        private readonly ILogger<DataHandlerService> _logger = logger;
         private const string path = @"C:\Dev\TrainToDev\SignalRProject\data.txt";
 
         public void HandleDataOnStartUp()
@@ -45,26 +47,40 @@ namespace Client.Services
 
         private void LoadDataFileIntoQueue()
         {
-            var content = File.ReadAllLines(path);
-
-            foreach (string line in content)
+            try
             {
-                _messageQueue.GetQueue().Enqueue(line);
+                var content = File.ReadAllLines(path);
+
+                foreach (string line in content)
+                {
+                    _messageQueue.GetQueue().Enqueue(line);
+                }
+            }
+            catch (FileNotFoundException ex)
+            {
+                _logger.LogWarning(ex, $"File not found: {path}");
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, $"Failed to read file: {path}");
             }
         }
 
-        private static void DeleteDataFile()
+        private void DeleteDataFile()
         {
-            File.Delete(path);
-
-            if (File.Exists(path))
+            try
             {
-                Console.WriteLine("File has not been deleted");
-                Console.WriteLine("Exiting...");
-                Console.ReadKey();
-                Environment.Exit(0);
-            }
+                if (!File.Exists(path))
+                {
+                    _logger.LogWarning($"File does not exist: {path}");
+                }
 
+                File.Delete(path);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogError(ex, $"Failed to delete file: {path}");
+            }
         }
     }
 }

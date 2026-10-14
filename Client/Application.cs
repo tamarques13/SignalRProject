@@ -21,6 +21,7 @@ namespace Client
             _shutDownHandler.SetShutDownProcess();
 
             Console.WriteLine("SignalR w/ Queue Training Project");
+
             _dataHandler.HandleDataOnStartUp();
 
             _collectInput.SetGroupInput(_collectInput.CollectString("Group"));
